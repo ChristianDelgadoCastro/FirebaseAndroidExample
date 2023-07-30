@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "890865463612",
+    "project_id": "spawnlobeznoapp",
+    "storage_bucket": "spawnlobeznoapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:890865463612:android:890e0841e73bcd573eae39",
+        "android_client_info": {
+          "package_name": "com.spawndev.firebaseExample"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "890865463612-00ge3807168vgfcncnan7an51it1d63n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvypEjsMS31oPN_0U9OvpRh89PieyrjLQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "890865463612-00ge3807168vgfcncnan7an51it1d63n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

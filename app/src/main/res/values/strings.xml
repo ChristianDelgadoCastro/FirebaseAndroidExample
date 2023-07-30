@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Firebase-ChristianDev</string>
+    <string name="prefs_file">com.spawndev.firebaseExample.PREFERENCE_FILE_KEY</string>
+</resources>
