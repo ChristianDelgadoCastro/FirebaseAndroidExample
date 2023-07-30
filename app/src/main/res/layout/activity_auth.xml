@@ -73,7 +73,7 @@
 
             <Button
                 android:id="@+id/signUpButton"
-                android:layout_width="128dp"
+                android:layout_width="77dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@color/colorPrimary"
@@ -107,5 +107,12 @@
             android:textAlignment="textStart"
             android:textColor="@color/colorPrimaryDark" />
 
+        <Button
+            android:id="@+id/errorButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Error" />
+
     </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

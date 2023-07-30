@@ -18,6 +18,12 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
+import com.google.firebase.remoteconfig.ktx.remoteConfig
+import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
 
 class AuthActivity : AppCompatActivity() {
 
@@ -30,6 +36,8 @@ class AuthActivity : AppCompatActivity() {
     private lateinit var googleButton: Button
     private lateinit var authLayout: LinearLayout
     private lateinit var showHidePasswordButton: ImageButton
+    private lateinit var errorButton: Button
+
     private var isPasswordVisible = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,7 +56,11 @@ class AuthActivity : AppCompatActivity() {
         googleButton = findViewById(R.id.googleButton)
         authLayout = findViewById(R.id.authLayout)
         showHidePasswordButton = findViewById(R.id.showHidePasswordButton)
+        errorButton = findViewById(R.id.errorButton)
 
+        errorButton.setOnClickListener {
+            throw RuntimeException("Test Crash") // Force a crash
+        }
         //Metodo para mostrar/ocultar contraseña
         showHidePasswordButton.setOnClickListener {
             // Cambiar el estado del campo de contraseña
@@ -77,6 +89,40 @@ class AuthActivity : AppCompatActivity() {
         bundle.putString("message", "integracion de Firebase complta")
         analytics.logEvent("InitScreen",bundle)
 
+        // Remote Config
+        val configSettings : FirebaseRemoteConfigSettings = remoteConfigSettings {
+            minimumFetchIntervalInSeconds = 60
+        }
+        val firebaseConfig: FirebaseRemoteConfig = Firebase.remoteConfig
+        firebaseConfig.setConfigSettingsAsync(configSettings)
+        firebaseConfig.setDefaultsAsync(mapOf("show_error_button" to false, "error_button_text" to "Error"))
+
+        errorButton.visibility = View.INVISIBLE
+        Firebase.remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val showErrorButtonRemote = Firebase.remoteConfig.getBoolean("show_error_button")
+                val errorButtonTextRemote = Firebase.remoteConfig.getString("error_button_text")
+
+                if (showErrorButtonRemote) {
+                    errorButton.visibility = View.VISIBLE
+                }
+                errorButton.text = errorButtonTextRemote
+            }
+        }
+        signUpButton.visibility = View.INVISIBLE
+        Firebase.remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val showRegisterButtonRemote = Firebase.remoteConfig.getBoolean("Register_button_show")
+                val RegisterButtonTextRemote = Firebase.remoteConfig.getString("Register_button_text")
+
+                if (showRegisterButtonRemote) {
+                    signUpButton.visibility = View.VISIBLE
+                }else {
+                    signUpButton.text = RegisterButtonTextRemote
+                }
+            }
+        }
+
         // Setup
         setup()
         session()
@@ -98,22 +144,28 @@ class AuthActivity : AppCompatActivity() {
             authLayout.visibility = View.INVISIBLE
             showHome(email, ProviderType.valueOf(provider))
         }
-
     }
 
     private fun setup() {
         title = "Autenticacion"
         signUpButton.setOnClickListener{
-            if (emailEditText.text.isNotEmpty() && passwordEditText.text.isNotEmpty()) {
+            signUpButton.setOnClickListener {
+                val email = emailEditText.text.toString()
+                val password = passwordEditText.text.toString()
 
-                FirebaseAuth.getInstance()
-                    .createUserWithEmailAndPassword(emailEditText.text.toString(),
-                        passwordEditText.text.toString()).addOnCompleteListener{
-                        if (it.isSuccessful) {
-                            showHome(it.result?.user?.email ?:"", ProviderType.BASIC)
-                        } else {
-                            showAlert()
-                        }
+                if (email.isNotEmpty() && password.isNotEmpty()) {
+                    if (isICIIBAEmail(email)) {
+                        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
+                            .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    showHome(task.result?.user?.email ?: "", ProviderType.BASIC)
+                                } else {
+                                    showAlert()
+                                }
+                            }
+                    } else {
+                        showAlertCorreo()
+                    }
                 }
             }
             googleButton.setOnClickListener {
@@ -143,13 +195,25 @@ class AuthActivity : AppCompatActivity() {
             }
         }
 
+    }
 
+    private fun isICIIBAEmail(email: String): Boolean {
+        return email.endsWith("@iciiba.edu.mx", ignoreCase = true)
     }
 
     private fun showAlert() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Error")
         builder.setMessage("Se ha producido un error autenticando el usuario")
+        builder.setPositiveButton("Aceptar", null)
+        val dialog: AlertDialog = builder.create()
+        dialog.show()
+    }
+
+    private fun showAlertCorreo() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Correo no válido")
+        builder.setMessage("Debes pertenecer a la organizacion ICIIBA para entrar")
         builder.setPositiveButton("Aceptar", null)
         val dialog: AlertDialog = builder.create()
         dialog.show()
@@ -166,28 +230,33 @@ class AuthActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if(requestCode === GOOGLE_SIGN_IN) {
-
+        if (requestCode === GOOGLE_SIGN_IN) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
 
             try {
                 val account = task.getResult(ApiException::class.java)
 
-                if(account != null){
-                    val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+                if (account != null) {
+                    val email = account.email ?: ""
 
-                    FirebaseAuth.getInstance().signInWithCredential(credential).addOnCompleteListener {
-                        if (it.isSuccessful) {
-                            showHome(account.email ?: "", ProviderType.GOOGLE)
-                        } else {
-                            showAlert()
-                        }
+                    if (isICIIBAEmail(email)) {
+                        val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+
+                        FirebaseAuth.getInstance().signInWithCredential(credential)
+                            .addOnCompleteListener {
+                                if (it.isSuccessful) {
+                                    showHome(email, ProviderType.GOOGLE)
+                                } else {
+                                    showAlert()
+                                }
+                            }
+                    } else {
+                        showAlertCorreo()
                     }
                 }
-            }catch (e: ApiException){
+            } catch (e: ApiException) {
                 showAlert()
             }
-
         }
     }
 
