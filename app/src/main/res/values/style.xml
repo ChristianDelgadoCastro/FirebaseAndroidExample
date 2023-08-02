@@ -9,4 +9,9 @@
     <style name="SplashTheme" parent="AppTheme">
         <item name="android:windowBackground">@drawable/splashscreen</item>
     </style>
+
+    <style name="GridItemText" parent="TextAppearance.AppCompat.Subhead">
+        <item name="android:padding">4dp</item>
+        <item name="android:textSize">14sp</item>
+    </style>
 </resources>

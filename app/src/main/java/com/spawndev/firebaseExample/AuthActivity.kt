@@ -6,11 +6,9 @@ import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.LinearLayout
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -24,6 +22,12 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import com.google.firebase.remoteconfig.ktx.remoteConfig
 import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
+import com.spawndev.firebaseExample.model.Calificaciones
+import com.spawndev.firebaseExample.network.ApiService
+import com.spawndev.firebaseExample.network.RetrofitClient
+import retrofit2.Call
+import retrofit2.Response
+import retrofit2.Callback
 
 class AuthActivity : AppCompatActivity() {
 
@@ -220,11 +224,37 @@ class AuthActivity : AppCompatActivity() {
     }
 
     private fun showHome(email: String, provider: ProviderType) {
-        val homeIntent = Intent(this, HomeActivity::class.java).apply {
-            putExtra("email", email)
-            putExtra("provider", provider.name)
-        }
-        startActivity(homeIntent)
+        val apiService = RetrofitClient.retrofit.create(ApiService::class.java)
+        val call = apiService.obtenerCalificacionesPorEmail(email)
+
+        call.enqueue(object : Callback<List<Calificaciones>> {
+            override fun onResponse(call: Call<List<Calificaciones>>, response: Response<List<Calificaciones>>) {
+                if (response.isSuccessful) {
+                    val calificacionesList = response.body()
+                    if (calificacionesList != null) {
+                        val calificacionesArrayList = ArrayList<Calificaciones>(calificacionesList)
+                        // Aquí tienes la lista de calificaciones del usuario
+                        // Puedes mostrarlas en la HomeActivity o hacer lo que desees con ellas
+                        // Por ejemplo, puedes pasarlas como parámetro a la HomeActivity y mostrarlas en una lista
+                        val homeIntent = Intent(this@AuthActivity, HomeActivity::class.java).apply {
+                            putExtra("email", email)
+                            putExtra("provider", provider.name)
+                            putParcelableArrayListExtra("calificaciones", calificacionesArrayList)
+                        }
+                        startActivity(homeIntent)
+                    }
+                } else {
+                    // Manejar el caso de respuesta fallida
+                    Toast.makeText(this@AuthActivity, "Error al obtener las calificaciones", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<List<Calificaciones>>, t: Throwable) {
+                // Manejar el caso de fallo en la solicitud
+                Log.e("RetrofitError", "Error en la solicitud: ${t.message}")
+                Toast.makeText(this@AuthActivity, "Error en la solicitud", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
