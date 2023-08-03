@@ -5,9 +5,12 @@ import android.content.Intent
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.text.InputType
 import android.util.Log
 import android.view.View
+import android.view.Window
+import android.view.animation.AnimationUtils
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -44,12 +47,17 @@ class AuthActivity : AppCompatActivity() {
 
     private var isPasswordVisible = false
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         //Splash
         Thread.sleep(2000) //Esperar en el logotipo para que se aprecie
         setTheme(R.style.AppTheme)
 
         super.onCreate(savedInstanceState)
+        // Ocultar la barra de título
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
+
         setContentView(R.layout.activity_auth)
 
         // Referencias de las vistas
@@ -59,8 +67,6 @@ class AuthActivity : AppCompatActivity() {
         logInButton = findViewById(R.id.logInButton)
         googleButton = findViewById(R.id.googleButton)
         authLayout = findViewById(R.id.authLayout)
-        showHidePasswordButton = findViewById(R.id.showHidePasswordButton)
-        errorButton = findViewById(R.id.errorButton)
 
         errorButton.setOnClickListener {
             throw RuntimeException("Test Crash") // Force a crash
