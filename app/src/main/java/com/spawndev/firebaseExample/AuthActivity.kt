@@ -42,10 +42,6 @@ class AuthActivity : AppCompatActivity() {
     private lateinit var logInButton: Button
     private lateinit var googleButton: Button
     private lateinit var authLayout: LinearLayout
-    private lateinit var showHidePasswordButton: ImageButton
-    private lateinit var errorButton: Button
-
-    private var isPasswordVisible = false
 
 
 
@@ -68,31 +64,6 @@ class AuthActivity : AppCompatActivity() {
         googleButton = findViewById(R.id.googleButton)
         authLayout = findViewById(R.id.authLayout)
 
-        errorButton.setOnClickListener {
-            throw RuntimeException("Test Crash") // Force a crash
-        }
-        //Metodo para mostrar/ocultar contraseña
-        showHidePasswordButton.setOnClickListener {
-            // Cambiar el estado del campo de contraseña
-            isPasswordVisible = !isPasswordVisible
-
-            // Mostrar u ocultar la contraseña según el estado
-            if (isPasswordVisible) {
-                passwordEditText.inputType =
-                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                showHidePasswordButton.setImageResource(R.drawable.ic_password_hide)
-            } else {
-                passwordEditText.inputType =
-                    InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-                showHidePasswordButton.setImageResource(R.drawable.ic_password_show)
-            }
-
-            // Colocar el cursor al final del texto
-            passwordEditText.setSelection(passwordEditText.text.length)
-        }
-
-        passwordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-
         // Analytics Event
         val analytics = FirebaseAnalytics.getInstance(this)
         val bundle = Bundle()
@@ -107,18 +78,6 @@ class AuthActivity : AppCompatActivity() {
         firebaseConfig.setConfigSettingsAsync(configSettings)
         firebaseConfig.setDefaultsAsync(mapOf("show_error_button" to false, "error_button_text" to "Error"))
 
-        errorButton.visibility = View.INVISIBLE
-        Firebase.remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val showErrorButtonRemote = Firebase.remoteConfig.getBoolean("show_error_button")
-                val errorButtonTextRemote = Firebase.remoteConfig.getString("error_button_text")
-
-                if (showErrorButtonRemote) {
-                    errorButton.visibility = View.VISIBLE
-                }
-                errorButton.text = errorButtonTextRemote
-            }
-        }
         signUpButton.visibility = View.INVISIBLE
         Firebase.remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
             if (task.isSuccessful) {
