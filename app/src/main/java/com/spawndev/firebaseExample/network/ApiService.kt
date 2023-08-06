@@ -1,5 +1,6 @@
 package com.spawndev.firebaseExample.network
 
+import com.spawndev.firebaseExample.model.Asignaturas
 import com.spawndev.firebaseExample.model.Calificaciones
 import retrofit2.Call
 import retrofit2.http.GET
@@ -13,4 +14,9 @@ interface ApiService {
     // Método para obtener calificaciones por correo electrónico del usuario
     @GET("calificaciones/{email}")
     fun obtenerCalificacionesPorEmail(@Path("email") email: String): Call<List<Calificaciones>>
+
+    // Método para obtener la lista de asignaturas
+    @GET("asignaturas")
+    fun obtenerAsignaturas(): Call<List<Asignaturas>>
+
 }

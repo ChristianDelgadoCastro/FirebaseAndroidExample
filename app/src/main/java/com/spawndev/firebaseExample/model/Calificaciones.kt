@@ -17,6 +17,9 @@ class Calificaciones : Parcelable {
     @SerializedName("nControlAsignatura")
     var nControlAsignatura: String = ""
 
+    // Nueva propiedad para la asignatura
+    var asignatura: Asignaturas? = null
+
     constructor()
 
     constructor(parcel: Parcel) {

@@ -13,6 +13,7 @@ import android.view.Window
 import android.view.animation.AnimationUtils
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatDelegate
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -42,7 +43,7 @@ class AuthActivity : AppCompatActivity() {
     private lateinit var logInButton: Button
     private lateinit var googleButton: Button
     private lateinit var authLayout: LinearLayout
-
+    private lateinit var modeSwitch: Switch
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
