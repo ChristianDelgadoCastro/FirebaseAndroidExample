@@ -12,4 +12,12 @@
     <color name="colorAccent">#fc8c03</color>
     <color name="primary">#870c03</color>
     <color name="secondary">#eb4034</color>
+
+    <color name="color1">#FF5733</color>
+    <color name="color2">#3eb0d6</color>
+    <color name="color3">#3e55d6</color>
+    <color name="color4">#ba3ed6</color>
+    <color name="color5">#d68d3e</color>
+    <color name="color6">#d6ce3e</color>
+    <color name="color7">#85d63e</color>
 </resources>
